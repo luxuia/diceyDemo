@@ -16,15 +16,6 @@ interface IModel {
 
 @ccclass
 export default class NewClass extends cc.Component {
-
-    @property(cc.Label)
-    label: cc.Label = null;
-
-    @property
-    text: string = 'hello';
-
-
-
     model:IModel = {
         panel: 'panel'
     }
@@ -35,26 +26,53 @@ export default class NewClass extends cc.Component {
         HP:'HP',
     }
  
-    handler = {}
-
-    test = {
-        a:function()
-        {
-            cc.log('asd');
-            return 'a'
-        }
-    }
+    handler: {[key:string]:cc.Node} = {}
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}
 
     start () {
         
-        for (var i=1;i < 4; i++) {
+        for (var i=1;i < 5; i++) {
             this.RoleModel['dices' + i] = 'Dices/Dice' + i; 
         }
+        let player = 'Player'
+        let idx = 0.1
         Object.keys(this.RoleModel).forEach(key=>{
-            this.handler[key] =   this.RoleModel[key]
+            this.handler[key] = cc.find(player + "/" + this.RoleModel[key], this.node)
+            let node = this.handler[key]
+            cc.log(node)
+            let old_x = node.x
+            let old_y = node.y
+            node.setPosition(old_x, -100)
+            this.scheduleOnce(function(){
+
+                let action = cc.moveTo(1, old_x, old_y)
+                action.easing(cc.easeInOut(3))
+                node.runAction(action)
+            }, idx)
+            idx+=0.1
+
+            node.on(cc.Node.EventType.MOUSE_DOWN, function(event){
+                cc.log(event)
+            })
+        })
+        let enemy = 'Enemy'
+        idx = 0.1
+        Object.keys(this.RoleModel).forEach(key=>{
+            this.handler[key] = cc.find(enemy + "/" + this.RoleModel[key], this.node)
+            let node = this.handler[key]
+            cc.log(node)
+            let old_x = node.x
+            let old_y = node.y
+            node.setPosition(old_x, -100)
+            this.scheduleOnce(function(){
+
+                let action = cc.moveTo(1, old_x, old_y)
+                action.easing(cc.easeInOut(3))
+                node.runAction(action)
+            }, idx)
+            idx+=0.1
         })
 
     }
