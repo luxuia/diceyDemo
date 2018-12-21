@@ -49,11 +49,12 @@ export default class NewClass extends cc.Component {
     // onLoad () {}
 
     start () {
+        
         for (var i=1;i < 4; i++) {
             this.RoleModel['dices' + i] = 'Dices/Dice' + i; 
         }
         Object.keys(this.RoleModel).forEach(key=>{
-            this.handler[key] = this.RoleModel[key]
+            this.handler[key] =   this.RoleModel[key]
         })
 
     }
