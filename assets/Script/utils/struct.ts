@@ -8,21 +8,28 @@ interface IModelNode {
     //self node is always exist
 }
 
+enum DiceStatus {
+
+}
+
 interface IDice {
-    idx:number
-    point:number
-    status?:any
+
 }
 
 interface IDiceNode {
     node_handler:IModelNode
-    dice_info:IDice
+
+    idx:number
+    point:number
+    alive:boolean
 }
 
 interface ISpellNode {
     node_handler:IModelNode
     spell_cfg?:ISpell
     dices?:IDiceNode[]
+    avaliable_count:number
+    alive:boolean
 }
 
 interface ISpellDamageFunc {
@@ -37,8 +44,8 @@ interface ISpell {
     
     damage_func:ISpellDamageFunc
 
-    avaliable_count?:number
-    max_limit?:number
+    avaliable_count:number
+    max_limit:number
     show_name?:string
     [propName:string]:any
 

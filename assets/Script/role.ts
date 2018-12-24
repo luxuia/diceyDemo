@@ -14,7 +14,7 @@ export default class Role {
     spell_nodes?:ISpellNode[] // 技能ui
     dice_nodes?:IDiceNode[] // 骰子ui
     role_nodes?:IModelNode // 角色信息ui
-    side?:BattleSide 
+    side?:BattleSide
 
     static RoleModel:IModel = {
         name:'Name',
@@ -27,6 +27,10 @@ export default class Role {
     dice_node_pool:cc.NodePool
 
     ease_from_y:number
+
+    static total_dice_cache_count=6
+
+    dice_init_pos:cc.Vec2[] = []
 
     constructor(cfg:IRoleCfg) {
         this.hp = cfg.hp
@@ -58,7 +62,7 @@ export default class Role {
         })
 
         let dices_model = {}
-        for (let i=1;i<5;i++) {
+        for (let i=1;i<=Role.total_dice_cache_count;i++) {
             dices_model['dices' +i] = 'Dices/Dice'+i
         }
 
@@ -66,12 +70,14 @@ export default class Role {
 
         this.dice_nodes = []
 
-        for (let i=1; i<5; ++i) {
+        for (let i=1; i<= Role.total_dice_cache_count; ++i) {
             let key = 'dices' + i
 
             let node = dice_handler[key]
 
-            this.dice_nodes.push({node_handler:{self:node}, dice_info:null})
+            this.dice_init_pos.push(node.getPosition())
+
+            this.dice_nodes.push({node_handler:{self:node}, idx:i, point:0, alive:false})
 
             node.on(cc.Node.EventType.TOUCH_START, function(event){
                 node.opacity = 100
@@ -117,7 +123,7 @@ export default class Role {
         let role = BattleMain.instance.get_defender()
         role.hp = role.hp - damage
 
-        this.refresh_role_info()
+        role.refresh_role_info()
     }
 
     show_spell_card() {
@@ -128,12 +134,15 @@ export default class Role {
             let target_pos = battle_main.get_spell_pos(spells[i], i)
             // 保证卡的显示层级
             let node = battle_main.spell_handlers[spells.length- i-1]
+
             let handler = node.node_handler
             handler.self.active = true
 
             let spell_cfg = spells[i]
             node.spell_cfg = spell_cfg
             node.dices = []
+            node.alive = true
+            node.avaliable_count = spell_cfg.avaliable_count ? spell_cfg.avaliable_count : 1
             
             let width = cc.winSize.width+100
             let targetx = target_pos.x
@@ -154,9 +163,10 @@ export default class Role {
                 return BattleMain.replace_desc_func(spell_cfg, match, sub, sub2)
             })
         }
-        for (let i =spells.length; i<battle_main.cached_spell_nodes_count; ++i) {
+        for (let i =spells.length; i<BattleMain.cached_spell_nodes_count; ++i) {
             let node = battle_main.spell_handlers[i]
             node.node_handler.self.active =false
+            node.alive = false
         }
     }
 
@@ -166,7 +176,7 @@ export default class Role {
         // 需要骰子，已有骰子数量小于需要的
         if (cfg.slot_count <= 0 && spell.dices.length >= cfg.slot_count) return 
         // 骰子点数大于最大值
-        if (cfg.max_limit && cfg.max_limit < dice.dice_info.point) return
+        if (cfg.max_limit && cfg.max_limit < dice.point) return
         
         spell.dices.push(dice)
         
@@ -183,12 +193,19 @@ export default class Role {
         if (cfg.slot_count > spell.dices.length) return
 
         let self = this
+        // 技能無效
+        spell.avaliable_count--
+        if (spell.avaliable_count <= 0)
+            spell.alive = false
+        // 骰子無效
+        spell.dices.forEach(dice=>dice.alive=false)
+
         //伤害计算
         BattleMain.instance.scheduleOnce(function(){
             dice_node.stopAction(dice_action)
             let total_point = 0
             for (let i=0; i < spell.dices.length;++i) {
-                total_point+=spell.dices[i].dice_info.point
+                total_point+=spell.dices[i].point
             }
             let damage = cfg.damage_func(total_point)
             self.do_damage_effect(damage)
@@ -237,6 +254,7 @@ export default class Role {
 
             let node = dices[key].node_handler.self
             node.active = true
+            node.setPosition(this.dice_init_pos[key])
 
             let self = this
             cc.loader.loadRes('Texture/dice', cc.SpriteAtlas, function(err, atlas:cc.SpriteAtlas){
@@ -244,7 +262,10 @@ export default class Role {
                 let frame = atlas.getSpriteFrame('dice' + dice_point)
                 node.getComponent(cc.Sprite).spriteFrame = frame
 
-                dices[key].dice_info = {idx:key, point:dice_point}
+                let dice = dices[key]
+                dice.idx = key
+                dice.point = dice_count
+                dice.alive = true
             })
 
             let old_x = node.x
