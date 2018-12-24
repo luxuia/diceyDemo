@@ -1,6 +1,5 @@
 
-
-export class Cfg {
+export default class RoleCfg {
     static warrier:IRoleCfg = {
         name:"战士",
         dice_count: 2,        
@@ -31,7 +30,7 @@ export class Cfg {
     }
     static robot:IRoleCfg = {
         name:'盗贼',
-        dice_count:1,
+        dice_count:2,
         hp:24,
         spells:[
             {
