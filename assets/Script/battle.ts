@@ -36,7 +36,7 @@ export default class BattleMain extends cc.Component {
         slot_desc: 'bg1/slot/desc',
     }
 
-    spell_handlers: { [key: number]: ISpellNode } = {}
+    spell_handlers: ISpellNode[] = []
 
     player: Role
     enemy: Role
@@ -86,6 +86,8 @@ export default class BattleMain extends cc.Component {
     next_turn() {
         this.battle_turn = this.battle_turn == BattleSide.Player ?  BattleSide.Enemy: BattleSide.Player
 
+        cc.log(`enter ${this.battle_turn.toString()}'s turn`)
+
         let defender = this.get_defender()
         defender.on_attack_end()
         let role = this.get_attacker()
@@ -124,7 +126,7 @@ export default class BattleMain extends cc.Component {
                 node.setParent(spell_root)
 
                 let node_handle = Util.parse_model(node, null, self.SpellCardModel)
-                self.spell_handlers[i] = { node_handler: node_handle, alive:true, avaliable_count:0}
+                self.spell_handlers.push({ node_handler: node_handle, alive:true, avaliable_count:0})
             }
             self.next_turn()
         })

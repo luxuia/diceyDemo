@@ -11,7 +11,7 @@ export default class Role {
 
     cfg:IRoleCfg
 
-    spell_nodes?:ISpellNode[] // 技能ui
+    //spell_nodes?:ISpellNode[] // 技能ui
     dice_nodes?:IDiceNode[] // 骰子ui
     role_nodes?:IModelNode // 角色信息ui
     side?:BattleSide
@@ -252,20 +252,20 @@ export default class Role {
         let idx = 0.1
         for (let key=0;key<dice_count; key ++){
 
-            let node = dices[key].node_handler.self
+            let dice = dices[key]
+            let node = dice.node_handler.self
+
             node.active = true
+            let dice_point = Util.random_int(1, 6)
+            dice.idx = key
+            dice.point = dice_count
+            dice.alive = true
             node.setPosition(this.dice_init_pos[key])
 
             let self = this
             cc.loader.loadRes('Texture/dice', cc.SpriteAtlas, function(err, atlas:cc.SpriteAtlas){
-                let dice_point = Util.random_int(1, 6)
                 let frame = atlas.getSpriteFrame('dice' + dice_point)
                 node.getComponent(cc.Sprite).spriteFrame = frame
-
-                let dice = dices[key]
-                dice.idx = key
-                dice.point = dice_count
-                dice.alive = true
             })
 
             let old_x = node.x
@@ -282,6 +282,7 @@ export default class Role {
 
         for (let i=dice_count;i<dices.length;i++) {
             dices[i].node_handler.self.active = false
+            dices[i].alive = false
         }
     }
 
