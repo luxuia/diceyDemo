@@ -1,7 +1,11 @@
 import './utils/struct'
-import BattleMain from './battle';
-import Util from './utils/util';
+import BattleMain from './battle'
+import Util from './utils/util'
 
+enum BattleSide {
+    Player,     // 左下
+    Enemy       // 右上
+}
 
 export default class Role {
     max_hp:number
@@ -16,6 +20,8 @@ export default class Role {
     role_nodes?:IModelNode // 角色信息ui
     side?:BattleSide
 
+    dice_node_pool:IDiceNode[]
+
     static RoleModel:IModel = {
         name:'Name',
         career:'Career',
@@ -23,8 +29,6 @@ export default class Role {
         hp_num:'HP/num',
         dice_root:'Dices',
     }
-
-    dice_node_pool:cc.NodePool
 
     ease_from_y:number
 
@@ -69,6 +73,7 @@ export default class Role {
         let dice_handler = Util.parse_model(parent_node, role_tag, dices_model)
 
         this.dice_nodes = []
+        this.dice_node_pool = []
 
         for (let i=1; i<= Role.total_dice_cache_count; ++i) {
             let key = 'dices' + i
@@ -77,7 +82,7 @@ export default class Role {
 
             this.dice_init_pos.push(node.getPosition())
 
-            this.dice_nodes.push({node_handler:{self:node}, idx:i, point:0, alive:false})
+            this.push_free_dice(node, i)
 
             node.on(cc.Node.EventType.TOUCH_START, function(event){
                 node.opacity = 100
@@ -173,10 +178,13 @@ export default class Role {
     try_use_spell(spell:ISpellNode, dice:IDiceNode) {
         //check can add this dice
         let cfg = spell.spell_cfg
+
+        cc.log(`try use spell ${cfg.name} with dice point ${dice.point}`)
+
         // 需要骰子，已有骰子数量小于需要的
-        if (cfg.slot_count <= 0 && spell.dices.length >= cfg.slot_count) return 
+        if (cfg.slot_count <= 0 && spell.dices.length >= cfg.slot_count) return 0.2
         // 骰子点数大于最大值
-        if (cfg.max_limit && cfg.max_limit < dice.point) return
+        if (cfg.max_limit && cfg.max_limit < dice.point) return 0.2
         
         spell.dices.push(dice)
         
@@ -184,13 +192,16 @@ export default class Role {
         let slot_pos = spell.node_handler.slot.convertToWorldSpaceAR(cc.Vec2.ZERO)
         let dice_root = this.role_nodes.dice_root
         let node_space_pos = dice_root.convertToNodeSpaceAR(slot_pos)
-        let dice_action = cc.moveTo(0.2, node_space_pos)
+
+        let dis = Math.max(Math.min(node_space_pos.sub(slot_pos).mag()/50, 5), 1)
+        let tween_time = dis*0.2
+        let dice_action = cc.moveTo(tween_time, node_space_pos)
         dice_action.easing(cc.easeInOut(5))
         let dice_node = dice.node_handler.self
         dice_node.runAction(dice_action)
 
         // 骰子数量不够
-        if (cfg.slot_count > spell.dices.length) return
+        if (cfg.slot_count > spell.dices.length) return tween_time
 
         let self = this
         // 技能無效
@@ -207,22 +218,29 @@ export default class Role {
             for (let i=0; i < spell.dices.length;++i) {
                 total_point+=spell.dices[i].point
             }
+            cc.log( spell.dices )
             let damage = cfg.damage_func(total_point)
+
+            cc.log(`cast spell ${cfg.name} casuse damage ${damage}, total dice point ${total_point}`)
+
             self.do_damage_effect(damage)
 
             // 移除动画的方向
             let targety:number
             let dice_targety:number
             let card_height = 100 //TODO calc card height
-            if (damage > 0) {
+
+            //自己攻击或者 敌人治疗
+            if (damage > 0 && BattleMain.instance.battle_turn == BattleSide.Player
+                || damage < 0 && BattleMain.instance.battle_turn == BattleSide.Enemy) {
                 // attack other
                 targety = cc.winSize.height/2+card_height
                 dice_targety = cc.winSize.height+card_height
 
             } else {
                 // recover me
-                targety = -cc.winSize.height/2+card_height
-                dice_targety = -cc.winSize.height+card_height
+                targety = -cc.winSize.height/2-card_height
+                dice_targety = -cc.winSize.height-card_height
             }
             
 
@@ -240,7 +258,9 @@ export default class Role {
             let node_action = cc.moveTo(0.5, old_x, dice_local.y)
             node_action.easing(cc.easeInOut(3))
             dice_node.runAction(node_action)
-        }, 0.2)
+        }, tween_time)
+        
+        return tween_time + 0.5
     }
 
     show_dices() {
@@ -251,16 +271,14 @@ export default class Role {
         let ease_from = this.ease_from_y
         let idx = 0.1
         for (let key=0;key<dice_count; key ++){
+            let dice = this.pop_free_dice()
+            dices[key] = dice
 
-            let dice = dices[key]
             let node = dice.node_handler.self
 
-            node.active = true
             let dice_point = Util.random_int(1, 6)
             dice.idx = key
-            dice.point = dice_count
-            dice.alive = true
-            node.setPosition(this.dice_init_pos[key])
+            dice.point = dice_point
 
             let self = this
             cc.loader.loadRes('Texture/dice', cc.SpriteAtlas, function(err, atlas:cc.SpriteAtlas){
@@ -279,16 +297,51 @@ export default class Role {
             }, idx)
             idx+=0.1
         }
+    }
 
-        for (let i=dice_count;i<dices.length;i++) {
-            dices[i].node_handler.self.active = false
-            dices[i].alive = false
+    pop_free_dice() {
+        let dice:IDiceNode
+        for (let i=0;i<Role.total_dice_cache_count;++i) {
+            if (this.dice_node_pool [i]) {
+                dice = this.dice_node_pool [i]
+                this.dice_count[i] = null
+            }
         }
+        dice.node_handler.self.active = true
+        dice.node_handler.self.setPosition(this.dice_init_pos[dice.idx])
+        dice.alive = true
+        this.dice_nodes[dice.idx] = dice
+
+        return dice
+    }
+
+    push_free_dice(node:cc.Node|IDiceNode, idx?:number) {
+        if ((<IDiceNode>node).point) {
+            this.dice_node_pool[idx] = <IDiceNode>node
+        } else {
+            this.dice_node_pool[idx] = {node_handler:{self:<cc.Node>node}, idx:idx, point:0, alive:false}
+        }
+        this.dice_node_pool[idx].node_handler.self.active = false
+        this.dice_node_pool[idx].alive = false
+    }
+
+    give_dice(point:number, delay:number) {
+        let dice = this.pop_free_dice()
+
+        let node = dice.node_handler.self
+        let old_x = node.x
+        let old_y = node.y
+        node.setPosition(old_x, this.ease_from_y)
+        BattleMain.instance.scheduleOnce(function(){
+                let action = cc.moveTo(1, old_x, old_y)
+                action.easing(cc.easeInOut(3))
+                node.runAction(action)
+        }, delay)
     }
 
     hide_dices() {
         for (let i =0; i < this.dice_nodes.length;++i) {
-            this.dice_nodes[i].node_handler.self.active = false
+            this.push_free_dice(this.dice_nodes[i])
         }
     }
 

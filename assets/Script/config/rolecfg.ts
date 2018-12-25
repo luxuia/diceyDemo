@@ -1,3 +1,5 @@
+import SpellFuncs from '../spell_funcs'
+import Util from '../utils/util';
 
 export default class RoleCfg {
     static warrier:IRoleCfg = {
@@ -7,13 +9,14 @@ export default class RoleCfg {
         spells : [
             {
                 name:'剑',
-                desc:'造成<img src=""/>{total_dice_points}点伤害',
+                desc:'造成<img src="attack"/>{total_dice_points}点伤害',
                 slot_count:1,
                 slot_desc:'最大\n{max_limit}',
                 max_limit:5,
                 damage_func:function(total_dice_points) {
                     return total_dice_points
-                }
+                },
+                avaliable_count :1,
             },
             {
                 name:'投掷',
@@ -22,8 +25,12 @@ export default class RoleCfg {
                 slot_desc:'',
                 avaliable_count:3,
                 damage_func:function(total_dice_points) {
-                    return total_dice_points
-                }
+                    return 0
+                },
+                effect_func:function(dice:IDice[], spell:ISpell){
+                    SpellFuncs.give_dices(spell, 1, 6)
+                },
+                max_limit:6
             },
         ],
 
@@ -40,7 +47,7 @@ export default class RoleCfg {
                 slot_count:1,
 
                 desc:'造成<img src="attack"/>{total_dice_points}点伤害\n(可重复使用)',
-                avaliable_count:Number.MAX_VALUE,
+                avaliable_count:1,//Number.MAX_VALUE,
                 damage_func:function(total_dice_points) {
                     return total_dice_points
                 }
@@ -51,8 +58,15 @@ export default class RoleCfg {
                 slot_count:1,
                 desc:'将一个骰子拆分成两个',
                 damage_func:function(total_dice_points) {
-                    return total_dice_points
-                }
+                    return 0
+                },
+                effect_func:function(dices:IDice[], spell:ISpell, total_dice_points:number) {
+                    let val = Util.random_int(1, total_dice_points-1)
+                    SpellFuncs.give_dices(spell, val, val)
+                    SpellFuncs.give_dices(spell, val, val)
+                },
+                avaliable_count:1,
+                max_limit:6,
             },
             {
                 name:'轻顶',
@@ -62,7 +76,11 @@ export default class RoleCfg {
                 desc:'骰子点数+1',
                 damage_func:function(total_dice_points) {
                     return total_dice_points
-                }
+                },
+                effect_func:function(dices:IDice[], spell:ISpell, total_dice_points:number) {
+                    SpellFuncs.give_dices(spell, total_dice_points+1, total_dice_points+1)
+                },
+                avaliable_count:1
             }
         ]
     }

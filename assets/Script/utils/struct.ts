@@ -12,10 +12,6 @@ enum DiceStatus {
 
 }
 
-interface IDice {
-
-}
-
 interface IDiceNode {
     node_handler:IModelNode
 
@@ -27,9 +23,9 @@ interface IDiceNode {
 interface ISpellNode {
     node_handler:IModelNode
     spell_cfg?:ISpell
-    dices?:IDiceNode[]
     avaliable_count:number
     alive:boolean
+    dices?:IDiceNode[]
 }
 
 interface ISpellDamageFunc {

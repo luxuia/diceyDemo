@@ -94,7 +94,10 @@ export default class BattleMain extends cc.Component {
         role.on_attack_start()
 
         if (this.battle_turn == BattleSide.Enemy) {
-            AI.run_ai(role)
+            // 等出骰子动画播完
+            this.scheduleOnce(function(){
+                AI.run_ai(role)
+                }, 1)
         }
     }
 
