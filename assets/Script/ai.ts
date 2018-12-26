@@ -17,13 +17,13 @@ export default class AI {
         for (let i=0; i<role.dice_count; ++i) {
 
             let dice = role.dice_nodes[i]
+            cc.log('index ', i, dice.alive, dice.point)
             if (dice && dice.alive) {
                 cc.log('ai try use dice idx:', dice.index, dice.point)
 
                 for (let j=0;j<role.spell_nodes.length;++j) {
                     let spell = role.spell_nodes[j]
-                    if (spell.alive && spell.spell_cfg.max_limit >= dice.point) {
-
+                    if (spell.alive && role.can_use_spell(spell, dice)) {
                         tween_time = role.try_use_spell(spell, dice)
                         casted = true
 

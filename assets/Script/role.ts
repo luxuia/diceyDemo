@@ -10,7 +10,6 @@ enum BattleSide {
 export default class Role {
     max_hp:number
     hp:number
-    dice_count:number
     name:string
 
     cfg:IRoleCfg
@@ -39,7 +38,6 @@ export default class Role {
     constructor(cfg:IRoleCfg) {
         this.hp = cfg.hp
         this.max_hp = cfg.hp
-        this.dice_count = cfg.dice_count
         this.cfg = cfg
         this.name = cfg.name
 
@@ -138,7 +136,7 @@ export default class Role {
         role.refresh_role_info()
     }
 
-    show_spell_card() {
+    tween_show_spell_card() {
         let battle_main = BattleMain.instance
 
         let spells = this.cfg.spells
@@ -173,12 +171,26 @@ export default class Role {
         }
     }
 
+    // 退场操作
+    tween_hide_spell_card() {
+        for (let i=0;i<this.spell_nodes.length;++i) {
+            if (this.spell_nodes[i] && this.spell_nodes[i].alive) {
+                let node = this.spell_nodes[i].node_handler.self
+                let targety = node.y
+
+                let action = cc.moveTo(0.5, -cc.winSize.width-200, targety)
+                action.easing(cc.easeInOut(3))
+                node.runAction(action)
+            }
+        }
+        setTimeout(() => {
+            this.clean_spell_cards()
+        }, 500);
+    }
 
     static dice_slot_img_str = "<img src='dice_slot'/>"
     static replace_desc_func(spell:ISpellNode, match, sub, sub2) {
         let spell_cfg = spell.spell_cfg
-
-        cc.log(sub, spell_cfg)
 
         if (spell[sub]) {
             return spell[sub]
@@ -235,16 +247,27 @@ export default class Role {
         this.refresh_spell_ui(node)
     }
 
-    try_use_spell(spell:ISpellNode, dice:IDiceNode) {
+    can_use_spell(spell:ISpellNode, dice:IDiceNode) {
         //check can add this dice
         let cfg = spell.spell_cfg
 
         cc.log(`try use spell ${cfg.name} with dice point ${dice.point}`)
 
         // 需要骰子，已有骰子数量小于需要的
-        if (cfg.slot_count <= 0 && spell.dices.length >= cfg.slot_count) return 0.2
+        if (cfg.slot_count <= 0 && spell.dices.length >= cfg.slot_count) return false
         // 骰子点数大于最大值
-        if (cfg.max_limit && cfg.max_limit < dice.point) return 0.2
+        if (cfg.max_limit && cfg.max_limit < dice.point) return false
+
+        return true
+    }
+
+    try_use_spell(spell:ISpellNode, dice:IDiceNode) {
+        //check can add this dice
+        let cfg = spell.spell_cfg
+
+        if (!this.can_use_spell(spell, dice)) {
+            return 0.2
+        }
         
         spell.dices.push(dice)
 
@@ -265,7 +288,6 @@ export default class Role {
 
         let dis = Math.max(Math.min(dice_pos.sub(slot_pos).mag()/50, 5),1)
         let tween_time = dis*0.2
-        cc.log(dis, tween_time, dice_pos.sub(slot_pos).mag())
         let dice_action = cc.moveTo(tween_time, node_space_pos)
         dice_action.easing(cc.easeInOut(5))
         let dice_node = dice.node_handler.self
@@ -319,11 +341,9 @@ export default class Role {
             let action = cc.moveTo(remove_card_time, old_x, targety)
             action.easing(cc.easeInOut(3))
             spell.node_handler.self.runAction(action)
-            cc.log(old_x, targety)
 
             setTimeout(() => {
                 // 回收卡片
-                cc.log('timeout ', remove_card_time)
                 BattleMain.instance.push_spell_card(spell)
             }, remove_card_time*1000);
 
@@ -336,9 +356,9 @@ export default class Role {
             dice_node.runAction(node_action)
             
             if (spell.spell_cfg.effect_func) {
-                setTimeout(() => {
+                //setTimeout(() => {
                     spell.spell_cfg.effect_func(total_point)
-                }, remove_card_time*1000);
+                //}, tween_time*1000);
              }
         }, tween_time)
         
@@ -348,7 +368,7 @@ export default class Role {
     show_dices() {
         let dices = this.dice_nodes
         
-        let dice_count = this.dice_count
+        let dice_count = this.cfg.dice_count
 
         let ease_from = this.ease_from_y
         let idx = 0.1
@@ -399,8 +419,9 @@ export default class Role {
         dice.node_handler.self.active = true
         dice.node_handler.self.setPosition(this.dice_init_pos[dice.index])
         dice.alive = true
-        dice.node_handler.self.setSiblingIndex(1)
-        this.dice_nodes[dice.index] = dice
+        dice.node_handler.self.setSiblingIndex(0)
+        this.dice_nodes.push(dice)
+        cc.log('pop free', dice.index)
 
         return dice
     }
@@ -417,6 +438,8 @@ export default class Role {
 
         dice_node.node_handler.self.active = false
         dice_node.alive = false
+
+        cc.log('push free ', idx)
 
         return this.dice_node_pool[idx]
     }
@@ -447,7 +470,7 @@ export default class Role {
         cc.log('on_attack_start ', this.name)
 
         // show spells
-        this.show_spell_card()
+        this.tween_show_spell_card()
 
         //show dices
         this.show_dices()
@@ -458,6 +481,6 @@ export default class Role {
 
         this.clean_dices()
 
-        this.clean_spell_cards()
+        this.tween_hide_spell_card()
     }
 }

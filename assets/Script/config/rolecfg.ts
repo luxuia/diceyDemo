@@ -62,7 +62,7 @@ export default class RoleCfg {
                 },
                 effect_func:function(total_dice_points:number) {
                     let val = Util.random_int(1, total_dice_points-1)
-                    return SpellFuncs.give_dices(val, val) + SpellFuncs.give_dices(total_dice_points-val, total_dice_points-val, 0.5)
+                    return SpellFuncs.give_dices(val, val, 0) + SpellFuncs.give_dices(total_dice_points-val, total_dice_points-val, 0.1)
                 },
                 avaliable_count:1,
                 max_limit:6,

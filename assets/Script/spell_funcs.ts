@@ -18,7 +18,7 @@ export default class SpellFuncs {
 
         delay = delay?delay:0.1
         role.give_dice(point, delay)
-        return 0.5
+        return delay
     }
 
     static add_defence(total_dice_point:number) {
