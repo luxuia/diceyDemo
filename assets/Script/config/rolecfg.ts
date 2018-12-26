@@ -27,8 +27,8 @@ export default class RoleCfg {
                 damage_func:function(total_dice_points) {
                     return 0
                 },
-                effect_func:function(dice:IDice[], spell:ISpell){
-                    SpellFuncs.give_dices(spell, 1, 6)
+                effect_func:function(total_dice_points){
+                    return SpellFuncs.give_dices(1, 6)
                 },
                 max_limit:6
             },
@@ -60,10 +60,9 @@ export default class RoleCfg {
                 damage_func:function(total_dice_points) {
                     return 0
                 },
-                effect_func:function(dices:IDice[], spell:ISpell, total_dice_points:number) {
+                effect_func:function(total_dice_points:number) {
                     let val = Util.random_int(1, total_dice_points-1)
-                    SpellFuncs.give_dices(spell, val, val)
-                    SpellFuncs.give_dices(spell, val, val)
+                    return SpellFuncs.give_dices(val, val) + SpellFuncs.give_dices(total_dice_points-val, total_dice_points-val, 0.5)
                 },
                 avaliable_count:1,
                 max_limit:6,
@@ -77,8 +76,8 @@ export default class RoleCfg {
                 damage_func:function(total_dice_points) {
                     return total_dice_points
                 },
-                effect_func:function(dices:IDice[], spell:ISpell, total_dice_points:number) {
-                    SpellFuncs.give_dices(spell, total_dice_points+1, total_dice_points+1)
+                effect_func:function(total_dice_points:number) {
+                    return SpellFuncs.give_dices(total_dice_points+1, total_dice_points+1)
                 },
                 avaliable_count:1
             }

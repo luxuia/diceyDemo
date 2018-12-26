@@ -7,9 +7,14 @@ import Util from './utils/util'
 export default class SpellFuncs {
 
     // 消耗当前的骰子，返回技能对应的骰子
-    static give_dices(spell:ISpell, min:number, max:number) {
+    static give_dices(min:number, max:number, delay?:number) {
         let role = BattleMain.instance.get_attacker()
         let point = Util.random_int(min, max)
-        role.give_dices(point)
+
+        cc.log(`give dice min ${min} max: ${max} ret ${point}`)
+
+        delay = delay?delay:0.1
+        role.give_dice(point, delay)
+        return 0.5
     }
 }

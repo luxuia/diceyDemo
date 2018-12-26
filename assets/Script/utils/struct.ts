@@ -15,17 +15,9 @@ enum DiceStatus {
 interface IDiceNode {
     node_handler:IModelNode
 
-    idx:number
+    index:number
     point:number
     alive:boolean
-}
-
-interface ISpellNode {
-    node_handler:IModelNode
-    spell_cfg?:ISpell
-    avaliable_count:number
-    alive:boolean
-    dices?:IDiceNode[]
 }
 
 interface ISpellDamageFunc {
@@ -39,12 +31,22 @@ interface ISpell {
     slot_desc:string
     
     damage_func:ISpellDamageFunc
+    effect_func?:ISpellDamageFunc
 
     avaliable_count:number
     max_limit:number
     show_name?:string
-    [propName:string]:any
+}
 
+interface ISpellNode {
+    node_handler:IModelNode
+    spell_cfg?:ISpell
+    avaliable_count:number
+    alive:boolean
+    dices?:IDiceNode[]
+    index:number
+
+    __pooled:boolean
 }
 
 interface IRoleCfg{

@@ -15,10 +15,10 @@ export default class Role {
 
     cfg:IRoleCfg
 
-    //spell_nodes?:ISpellNode[] // 技能ui
-    dice_nodes?:IDiceNode[] // 骰子ui
-    role_nodes?:IModelNode // 角色信息ui
-    side?:BattleSide
+    spell_nodes:ISpellNode[] // 技能ui
+    dice_nodes:IDiceNode[] // 骰子ui
+    role_nodes:IModelNode // 角色信息ui
+    side:BattleSide
 
     dice_node_pool:IDiceNode[]
 
@@ -94,14 +94,17 @@ export default class Role {
 
                 cc.log('touch end ', key)
 
-                for (let key in BattleMain.instance.spell_handlers) {
-                    let element = BattleMain.instance.spell_handlers[key].node_handler
-                    let bg_com = element.bg1.getComponent(cc.Sprite)
-                    if (element.bg1.getBoundingBoxToWorld().contains(event.getLocation())){
-                        cc.log("touch in spell card", key)
+                for (let key in self.spell_nodes) {
+                    if (self.spell_nodes[key] && self.spell_nodes[key].alive) {
+                        let element = self.spell_nodes[key].node_handler
 
-                        self.try_use_spell(BattleMain.instance.spell_handlers[key], self.dice_nodes[i-1])
-                        break
+                        let bg_com = element.bg1.getComponent(cc.Sprite)
+                        if (element.bg1.getBoundingBoxToWorld().contains(event.getLocation())){
+                            cc.log("touch in spell card", key)
+
+                            self.try_use_spell(self.spell_nodes[key], self.dice_nodes[i-1])
+                            break
+                        }
                     }
                 };
             })
@@ -138,21 +141,23 @@ export default class Role {
         for (let i=0;i<spells.length;++i) {
             let target_pos = battle_main.get_spell_pos(spells[i], i)
             // 保证卡的显示层级
-            let node = battle_main.spell_handlers[spells.length- i-1]
+            let node = battle_main.pop_spell_card()
+
+            this.spell_nodes.push(node)
 
             let handler = node.node_handler
-            handler.self.active = true
 
             let spell_cfg = spells[i]
             node.spell_cfg = spell_cfg
             node.dices = []
             node.alive = true
             node.avaliable_count = spell_cfg.avaliable_count ? spell_cfg.avaliable_count : 1
+            node.index = i
             
             let width = cc.winSize.width+100
             let targetx = target_pos.x
             let targety = target_pos.y
-            handler.self.setPosition(new cc.Vec2(width, targety))
+            handler.self.setPosition(width, targety)
 
             battle_main.scheduleOnce(function(){
                 let action = cc.moveTo(1, targetx, targety)
@@ -168,11 +173,30 @@ export default class Role {
                 return BattleMain.replace_desc_func(spell_cfg, match, sub, sub2)
             })
         }
-        for (let i =spells.length; i<BattleMain.cached_spell_nodes_count; ++i) {
-            let node = battle_main.spell_handlers[i]
-            node.node_handler.self.active =false
-            node.alive = false
-        }
+    }
+
+    /**
+     * 
+     * @param spellcfg 
+     * @param index 
+     * @param avaliable_count 
+     * 产生一个技能卡片的副本，当卡片可用次数大于0的时候出现
+     */
+    create_background_spell_card(spellcfg:ISpell, index:number, avaliable_count:number) {
+        let target_pos = BattleMain.instance.get_spell_pos(spellcfg, index)
+        // 保证卡的显示层级
+        let node = BattleMain.instance.pop_spell_card()
+
+        this.spell_nodes[index] = node
+
+        let handler = node.node_handler
+
+        node.spell_cfg = spellcfg
+        node.dices = []
+        node.alive = true
+        node.avaliable_count = avaliable_count
+        
+        handler.self.setPosition(target_pos)
     }
 
     try_use_spell(spell:ISpellNode, dice:IDiceNode) {
@@ -208,6 +232,10 @@ export default class Role {
         spell.avaliable_count--
         if (spell.avaliable_count <= 0)
             spell.alive = false
+        else {
+            this.create_background_spell_card(spell.spell_cfg, spell.index, spell.avaliable_count)
+        }
+        
         // 骰子無效
         spell.dices.forEach(dice=>dice.alive=false)
 
@@ -245,19 +273,30 @@ export default class Role {
             
 
             // 移除技能卡片动画
+            let remove_card_time = 0.5
             let old_x = spell.node_handler.self.x
-            let action = cc.moveTo(0.5, old_x, targety)
+            let action = cc.moveTo(remove_card_time, old_x, targety)
             action.easing(cc.easeInOut(3))
             spell.node_handler.self.runAction(action)
+
+            setTimeout(() => {
+                // 回收卡片
+                BattleMain.instance.push_spell_card(spell)
+            }, remove_card_time);
 
             //移除骰子动画            
             old_x = dice_node.x
             let old_y = dice_node.y
             let dice_local = dice_root.convertToNodeSpaceAR(new cc.Vec2(0, dice_targety))
-            cc.log(dice_node, dice_local, targety)
             let node_action = cc.moveTo(0.5, old_x, dice_local.y)
             node_action.easing(cc.easeInOut(3))
             dice_node.runAction(node_action)
+            
+            if (spell.spell_cfg.effect_func) {
+                setTimeout(() => {
+                    spell.spell_cfg.effect_func(total_point)
+                }, remove_card_time);
+             }
         }, tween_time)
         
         return tween_time + 0.5
@@ -277,26 +316,32 @@ export default class Role {
             let node = dice.node_handler.self
 
             let dice_point = Util.random_int(1, 6)
-            dice.idx = key
-            dice.point = dice_point
+            dice.index = key
+            this.show_dice(dice, dice_point, idx)
+
+            idx+=0.1
+        }
+    }
+
+    show_dice(dice:IDiceNode, point:number, delay:number) {
+            let node = dice.node_handler.self
+            dice.point = point
 
             let self = this
             cc.loader.loadRes('Texture/dice', cc.SpriteAtlas, function(err, atlas:cc.SpriteAtlas){
-                let frame = atlas.getSpriteFrame('dice' + dice_point)
+                let frame = atlas.getSpriteFrame('dice' + point)
                 node.getComponent(cc.Sprite).spriteFrame = frame
             })
 
             let old_x = node.x
             let old_y = node.y
-            node.setPosition(old_x, ease_from)
+            node.setPosition(old_x, self.ease_from_y)
             BattleMain.instance.scheduleOnce(function(){
 
                 let action = cc.moveTo(1, old_x, old_y)
                 action.easing(cc.easeInOut(3))
                 node.runAction(action)
-            }, idx)
-            idx+=0.1
-        }
+            }, delay)
     }
 
     pop_free_dice() {
@@ -304,13 +349,14 @@ export default class Role {
         for (let i=0;i<Role.total_dice_cache_count;++i) {
             if (this.dice_node_pool [i]) {
                 dice = this.dice_node_pool [i]
-                this.dice_count[i] = null
+                this.dice_node_pool[i] = null
+                break
             }
         }
         dice.node_handler.self.active = true
-        dice.node_handler.self.setPosition(this.dice_init_pos[dice.idx])
+        dice.node_handler.self.setPosition(this.dice_init_pos[dice.index])
         dice.alive = true
-        this.dice_nodes[dice.idx] = dice
+        this.dice_nodes[dice.index] = dice
 
         return dice
     }
@@ -319,7 +365,7 @@ export default class Role {
         if ((<IDiceNode>node).point) {
             this.dice_node_pool[idx] = <IDiceNode>node
         } else {
-            this.dice_node_pool[idx] = {node_handler:{self:<cc.Node>node}, idx:idx, point:0, alive:false}
+            this.dice_node_pool[idx] = {node_handler:{self:<cc.Node>node}, index:idx, point:0, alive:false}
         }
         this.dice_node_pool[idx].node_handler.self.active = false
         this.dice_node_pool[idx].alive = false
@@ -328,21 +374,21 @@ export default class Role {
     give_dice(point:number, delay:number) {
         let dice = this.pop_free_dice()
 
-        let node = dice.node_handler.self
-        let old_x = node.x
-        let old_y = node.y
-        node.setPosition(old_x, this.ease_from_y)
-        BattleMain.instance.scheduleOnce(function(){
-                let action = cc.moveTo(1, old_x, old_y)
-                action.easing(cc.easeInOut(3))
-                node.runAction(action)
-        }, delay)
+        this.show_dice(dice, point, delay)
     }
 
-    hide_dices() {
+    clean_dices() {
         for (let i =0; i < this.dice_nodes.length;++i) {
             this.push_free_dice(this.dice_nodes[i])
         }
+        this.dice_nodes = []
+    }
+
+    clean_spell_cards() {
+        for (let i=0;i<this.spell_nodes.length;++i) {
+            BattleMain.instance.push_spell_card(this.spell_nodes[i])
+        }
+        this.spell_nodes = []
     }
 
     on_attack_start(){
@@ -358,6 +404,8 @@ export default class Role {
     on_attack_end(){
         cc.log('on_attack_end ', this.name)
 
-        this.hide_dices()
+        this.clean_dices()
+
+        this.clean_spell_cards()
     }
 }

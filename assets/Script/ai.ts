@@ -18,10 +18,10 @@ export default class AI {
 
             let dice = role.dice_nodes[i]
             if (dice && dice.alive) {
-                cc.log('try use dice idx:', dice.idx, dice.point)
+                cc.log('try use dice idx:', dice.index, dice.point)
 
-                for (let j=0;j<battlemain.spell_handlers.length;++j) {
-                    let spell = battlemain.spell_handlers[j]
+                for (let j=0;j<role.spell_nodes.length;++j) {
+                    let spell = role.spell_nodes[j]
                     if (spell.alive && spell.spell_cfg.max_limit >= dice.point) {
 
                         tween_time = role.try_use_spell(spell, dice)

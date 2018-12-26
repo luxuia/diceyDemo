@@ -101,6 +101,24 @@ export default class BattleMain extends cc.Component {
         }
     }
 
+    pop_spell_card() {
+        for (let i = 0; i < BattleMain.cached_spell_nodes_count; ++i) {
+            let spell = this.spell_handlers[i]
+
+            if (spell && spell.__pooled) {
+                spell.__pooled = false
+                spell.node_handler.self.active = true
+
+                return spell
+            }
+        }
+    }
+
+    push_spell_card(spell:ISpellNode) {
+        spell.__pooled = true
+        spell.node_handler.self.active = false
+    }
+
     start() {
         BattleMain.instance = this
 
@@ -129,7 +147,7 @@ export default class BattleMain extends cc.Component {
                 node.setParent(spell_root)
 
                 let node_handle = Util.parse_model(node, null, self.SpellCardModel)
-                self.spell_handlers.push({ node_handler: node_handle, alive:true, avaliable_count:0})
+                self.spell_handlers.push({ node_handler: node_handle, alive:true, avaliable_count:0, index:i, __pooled:true})
             }
             self.next_turn()
         })
