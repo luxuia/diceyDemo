@@ -8,10 +8,6 @@ interface IModelNode {
     //self node is always exist
 }
 
-enum DiceStatus {
-
-}
-
 interface IDiceNode {
     node_handler:IModelNode
 
@@ -24,6 +20,7 @@ interface ISpellDamageFunc {
     (total_point:number, ...args:any[]):number
 }
 
+// config data // 
 interface ISpell {
     name:string
     desc:string
@@ -38,6 +35,9 @@ interface ISpell {
     show_name?:string
 }
 
+/**
+ * TODO class
+ */
 interface ISpellNode {
     node_handler:IModelNode
     spell_cfg?:ISpell
@@ -45,6 +45,7 @@ interface ISpellNode {
     alive:boolean
     dices?:IDiceNode[]
     index:number
+    total_point:number
 
     __pooled:boolean
 }

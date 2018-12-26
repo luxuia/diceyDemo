@@ -41,9 +41,9 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 0.7767822265625,
-      "y": 0.7767822265625,
-      "z": 0.7767822265625
+      "x": 0.6476779557108596,
+      "y": 0.6476779557108596,
+      "z": 0.6476779557108596
     },
     "_quat": {
       "__type__": "cc.Quat",
@@ -981,10 +981,10 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": -32768,
+    "_zIndex": 0,
     "_is3DNode": false,
     "groupIndex": 0,
-    "_id": "69X17a5rhNUYw7XsiWl8hO"
+    "_id": "58VdJPdq9Pa7ptFWIcFr6+"
   },
   {
     "__type__": "cc.Label",
@@ -1009,7 +1009,7 @@
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
     "_N$overflow": 0,
-    "_id": "berUL2GXNI07dNLYJORmm0"
+    "_id": "cbVnXWfW9EwrXOukXLsCp2"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1019,7 +1019,7 @@
     "asset": {
       "__uuid__": "848b42ab-5ea3-476a-886f-7d88305c36b3"
     },
-    "fileId": "69X17a5rhNUYw7XsiWl8hO",
+    "fileId": "58VdJPdq9Pa7ptFWIcFr6+",
     "sync": false
   },
   {
@@ -1079,10 +1079,10 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": -32768,
+    "_zIndex": 0,
     "_is3DNode": false,
     "groupIndex": 0,
-    "_id": "3f5vo2dx1FUL37YIt2AEO4"
+    "_id": "06/efbNKdK+II0dvDilp4p"
   },
   {
     "__type__": "cc.Sprite",
@@ -1112,7 +1112,7 @@
     "_atlas": {
       "__uuid__": "cae6290e-d895-4159-95ef-20f334ffb18d"
     },
-    "_id": "97EQdbCc5Bq5vKNNocDphp"
+    "_id": "c4zocvxdtJaaUqUEhqbLgV"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1122,7 +1122,7 @@
     "asset": {
       "__uuid__": "848b42ab-5ea3-476a-886f-7d88305c36b3"
     },
-    "fileId": "3f5vo2dx1FUL37YIt2AEO4",
+    "fileId": "06/efbNKdK+II0dvDilp4p",
     "sync": false
   },
   {
@@ -1182,10 +1182,10 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": -32768,
+    "_zIndex": 0,
     "_is3DNode": false,
     "groupIndex": 0,
-    "_id": "d7UZ+MXCxHeoaNLOzFrdwY"
+    "_id": "6aiG8edgZGBZWhthlaOcOR"
   },
   {
     "__type__": "cc.Sprite",
@@ -1215,7 +1215,7 @@
     "_atlas": {
       "__uuid__": "cae6290e-d895-4159-95ef-20f334ffb18d"
     },
-    "_id": "77X/lY3wFNaJo71JdeC5cT"
+    "_id": "30V6PjJoZPy5gh2i1Xgi95"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1225,7 +1225,7 @@
     "asset": {
       "__uuid__": "848b42ab-5ea3-476a-886f-7d88305c36b3"
     },
-    "fileId": "d7UZ+MXCxHeoaNLOzFrdwY",
+    "fileId": "6aiG8edgZGBZWhthlaOcOR",
     "sync": false
   },
   {
@@ -1285,10 +1285,10 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": -32768,
+    "_zIndex": 0,
     "_is3DNode": false,
     "groupIndex": 0,
-    "_id": "d9nNEygB5ADpeW7npGY9LV"
+    "_id": "8crxsbnipIRoOXvtdZoRkj"
   },
   {
     "__type__": "cc.Label",
@@ -1313,7 +1313,7 @@
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
     "_N$overflow": 0,
-    "_id": "d2im/vtMlNXbrKYf0SxdSw"
+    "_id": "54FoAWnTBMOapHn8XqkR6J"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1323,7 +1323,7 @@
     "asset": {
       "__uuid__": "848b42ab-5ea3-476a-886f-7d88305c36b3"
     },
-    "fileId": "d9nNEygB5ADpeW7npGY9LV",
+    "fileId": "8crxsbnipIRoOXvtdZoRkj",
     "sync": false
   },
   {
@@ -1383,10 +1383,10 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": -32768,
+    "_zIndex": 0,
     "_is3DNode": false,
     "groupIndex": 0,
-    "_id": "399xrSeplFeZkPOIo7MFAI"
+    "_id": "deGf0jx+lDXobG8ZeflWq3"
   },
   {
     "__type__": "cc.Label",
@@ -1411,7 +1411,7 @@
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
     "_N$overflow": 0,
-    "_id": "f2Jk1dwYRK0q/B0UyAl87+"
+    "_id": "a9yeaoLIVBWrXDSqBurpg1"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1421,7 +1421,7 @@
     "asset": {
       "__uuid__": "848b42ab-5ea3-476a-886f-7d88305c36b3"
     },
-    "fileId": "399xrSeplFeZkPOIo7MFAI",
+    "fileId": "deGf0jx+lDXobG8ZeflWq3",
     "sync": false
   },
   {
@@ -1437,7 +1437,7 @@
     "_alignFlags": 4,
     "_left": -34,
     "_right": -24,
-    "_top": 0,
+    "_top": 125.5,
     "_bottom": -6.5,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,
@@ -1448,7 +1448,7 @@
     "_isAbsHorizontalCenter": true,
     "_isAbsVerticalCenter": true,
     "_originalWidth": 207,
-    "_originalHeight": 0,
+    "_originalHeight": 80,
     "_id": "eetJfb8c9EoqMEHhspZuAs"
   },
   {

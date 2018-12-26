@@ -9,6 +9,9 @@ export default class SpellFuncs {
     // 消耗当前的骰子，返回技能对应的骰子
     static give_dices(min:number, max:number, delay?:number) {
         let role = BattleMain.instance.get_attacker()
+        min = Math.max(Math.min(min, 6), 1)
+        max = Math.max(Math.min(max, 6), 1)
+
         let point = Util.random_int(min, max)
 
         cc.log(`give dice min ${min} max: ${max} ret ${point}`)
@@ -16,5 +19,9 @@ export default class SpellFuncs {
         delay = delay?delay:0.1
         role.give_dice(point, delay)
         return 0.5
+    }
+
+    static add_defence(total_dice_point:number) {
+
     }
 }

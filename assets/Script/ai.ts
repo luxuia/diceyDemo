@@ -18,7 +18,7 @@ export default class AI {
 
             let dice = role.dice_nodes[i]
             if (dice && dice.alive) {
-                cc.log('try use dice idx:', dice.index, dice.point)
+                cc.log('ai try use dice idx:', dice.index, dice.point)
 
                 for (let j=0;j<role.spell_nodes.length;++j) {
                     let spell = role.spell_nodes[j]
@@ -34,17 +34,15 @@ export default class AI {
             if (casted)
                 break
         }
-        if (!casted) {
-        cc.log(`simple ai step tween_time ${tween_time} next turn`)
-            // TODO 改成 async wait的形式
-            setTimeout(() => {
+        setTimeout(() => {
+            if (!casted) {
+                cc.log(`simple ai step tween_time ${tween_time} next turn`)
+                // TODO 改成 async wait的形式
                 battlemain.next_turn()
-            }, tween_time*1000+500);
-        } else {
-        cc.log(`simple ai step tween_time ${tween_time} simple ai`)
-            setTimeout(() => {
-               AI.SimpleAI() 
-            }, tween_time*1000+500);
-        }
+            } else {
+                cc.log(`simple ai step tween_time ${tween_time} simple ai`)
+                AI.SimpleAI() 
+            }
+        }, tween_time*1000+500);
     }
 }

@@ -47,7 +47,7 @@ export default class RoleCfg {
                 slot_count:1,
 
                 desc:'造成<img src="attack"/>{total_dice_points}点伤害\n(可重复使用)',
-                avaliable_count:1,//Number.MAX_VALUE,
+                avaliable_count:Number.MAX_VALUE,
                 damage_func:function(total_dice_points) {
                     return total_dice_points
                 }
@@ -74,7 +74,7 @@ export default class RoleCfg {
                 slot_count:1,
                 desc:'骰子点数+1',
                 damage_func:function(total_dice_points) {
-                    return total_dice_points
+                    return 0
                 },
                 effect_func:function(total_dice_points:number) {
                     return SpellFuncs.give_dices(total_dice_points+1, total_dice_points+1)

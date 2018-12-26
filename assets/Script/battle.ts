@@ -55,15 +55,20 @@ export default class BattleMain extends cc.Component {
     }
 
     on_click_next_turn() {
-        this.next_turn()
+        if (this.is_my_turn())
+            this.next_turn()
     }
 
     get_attacker() {
-        return this.battle_turn == BattleSide.Player ? this.player : this.enemy
+        return this.is_my_turn() ? this.player : this.enemy
     }
 
     get_defender() {
-        return this.battle_turn == BattleSide.Player ? this.enemy : this.player
+        return this.is_my_turn() ? this.enemy : this.player
+    }
+
+    is_my_turn() {
+        return this.battle_turn == BattleSide.Player
     }
 
     get_spell_pos(spell: ISpell, index: number) {
@@ -71,22 +76,12 @@ export default class BattleMain extends cc.Component {
         return this.spell_pos[index].add(this.spell_pos[index + 3]).mul(0.5)
     }
 
-    static dice_slot_img_str = "<img src='dice_slot'/>"
-    static replace_desc_func(spell_cfg, match, sub, sub2) {
-        if (spell_cfg[sub]) {
-            return spell_cfg[sub]
-        }
-        if (sub == 'total_dice_points') {
-            return BattleMain.dice_slot_img_str
-        }
-        cc.log(sub, spell_cfg)
-        return sub
-    }
-
     next_turn() {
-        this.battle_turn = this.battle_turn == BattleSide.Player ?  BattleSide.Enemy: BattleSide.Player
+        this.battle_turn = this.is_my_turn() ?  BattleSide.Enemy: BattleSide.Player
 
         cc.log(`enter ${this.battle_turn.toString()}'s turn`)
+
+        cc.find('NextTurn', this.node).active = this.is_my_turn()
 
         let defender = this.get_defender()
         defender.on_attack_end()
@@ -117,6 +112,7 @@ export default class BattleMain extends cc.Component {
     push_spell_card(spell:ISpellNode) {
         spell.__pooled = true
         spell.node_handler.self.active = false
+        spell.total_point=0
     }
 
     start() {
@@ -145,9 +141,10 @@ export default class BattleMain extends cc.Component {
             for (let i = 0; i < BattleMain.cached_spell_nodes_count; ++i) {
                 let node = cc.instantiate<cc.Node>(res)
                 node.setParent(spell_root)
+                node.active = false
 
                 let node_handle = Util.parse_model(node, null, self.SpellCardModel)
-                self.spell_handlers.push({ node_handler: node_handle, alive:true, avaliable_count:0, index:i, __pooled:true})
+                self.spell_handlers.push({ node_handler: node_handle, alive:true, avaliable_count:0, index:i, __pooled:true, total_point:0})
             }
             self.next_turn()
         })
