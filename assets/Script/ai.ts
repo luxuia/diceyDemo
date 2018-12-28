@@ -14,7 +14,7 @@ export default class AI {
         let role = battlemain.get_attacker()
         let tween_time = 1
 
-        for (let i=0; i<role.dice_count; ++i) {
+        for (let i=0; i<role.dice_nodes.length; ++i) {
 
             let dice = role.dice_nodes[i]
             cc.log('index ', i, dice.alive, dice.point)

@@ -269,7 +269,11 @@ export default class Role {
             return 0.2
         }
         
+        for (let i =0; i<this.dice_nodes.length;++i) {
+
+        }
         spell.dices.push(dice)
+
 
         let total_point = 0
         for (let i=0; i < spell.dices.length;++i) {
